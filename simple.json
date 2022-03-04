@@ -1,0 +1,23 @@
+{
+    "playlist":[
+        {
+          "id": "1",
+          "band": "Herzplatine",
+          "song": "Dealalarm",
+          "link": "https://open.spotify.com/artist/2ZHNNNUkWlcboai09BqLRa"
+        },
+        {
+          "id": "2",
+          "band": "Keinmannarmee",
+          "song": "...",
+          "link": "https://open.spotify.com/artist/2ZHNNNUkWlcboai09BqLRa"
+        },
+        {
+          "id": "3",
+          "band": "Keinmannarmee",
+          "song": "...",
+          "link": "https://open.spotify.com/artist/2ZHNNNUkWlcboai09BqLRa"
+        }
+      ]
+    
+  }

@@ -1,0 +1,28 @@
+{
+  "spotify":[
+      {
+        "id": "1",
+        "band": "Herzplatine",
+        "song": "Dealalarm",
+        "link": "https://open.spotify.com/artist/2ZHNNNUkWlcboai09BqLRa"
+      },
+      {
+        "id": "2",
+        "band": "Keinmannarmee",
+        "song": "Wolkenstadt",
+        "link": "https://open.spotify.com/track/1T3joJrkSaXp1bRAGsM5ov?si=22f5217451c744e1"
+      },
+      {
+        "id": "3",
+        "band": "Keinmannarmee",
+        "song": "Was wäre wenn?",
+        "link": "https://open.spotify.com/track/1VTUXOE0HZqWBuJND66ULy?si=3c964405dda742e9"
+      },
+      {
+        "id": "4",
+        "band": "Keinmannarmee",
+        "song": "Megaherz",
+        "link": "https://open.spotify.com/track/0KIiU6XzD4nttauguzjRcR?si=257f7a8a26ab4241"
+      }
+    ]
+  }
