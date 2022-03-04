@@ -1,5 +1,5 @@
-const {Builder, By, Key, until} = require('selenium-webdriver');
-const {fs} = require('file-system')
+const { Builder, By, Key, until } = require('selenium-webdriver');
+const { fs } = require('file-system')
 
 let driver;
 //let dealAlarm = 'https://open.spotify.com/artist/2ZHNNNUkWlcboai09BqLRa';
@@ -7,8 +7,12 @@ let driver;
 const accounts = JSON.parse(fs.readFileSync("./accounts.json", {encoding:'utf8', flag:'r'}));
 const playlist = JSON.parse(fs.readFileSync("./playlist.json", {encoding:'utf8', flag:'r'}));
 
-startSpotify(accounts.spotify[0],playlist.spotify[0]);
 
+// test: time interval
+//var intervalID = setInterval(startSpotify, 30000, accounts.spotify[0], playlist.spotify[3]);
+
+
+startSpotify(accounts.spotify[0],playlist.spotify[3]);
 
 async function startSpotify(account, song){
 
@@ -20,6 +24,10 @@ async function startSpotify(account, song){
     const sessionSong = song.link;
 
     driver = await new Builder().forBrowser("chrome").build();
+
+    await driver.manage().window().fullsceen;
+
+
     
     await driver.get('https://www.spotify.com');
 
@@ -28,18 +36,16 @@ async function startSpotify(account, song){
     
     await click('Cookies akzeptieren');
     await click('Anmelden');
+    
 
     await sleep(1000);
     await driver.findElement(By.id('login-username')).sendKeys(sessionUser, Key.RETURN);
     await driver.findElement(By.id('login-password')).sendKeys(sessionPasswort, Key.RETURN);
 
-
     await sleep(1000);
-
     await driver.get(sessionSong);
 
     await sleep(3000);
-    
     await driver.findElements(By.className("A8NeSZBojOQuVvK4l1pS")).then(function(elements){
         elements.forEach(function (element) {
             element.click();
@@ -48,6 +54,8 @@ async function startSpotify(account, song){
             });
         });
     });
+
+    await sleep(20000);
 }
 
 
