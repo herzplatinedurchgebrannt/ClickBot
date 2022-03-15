@@ -5,3 +5,6 @@ accounts.json
 playlist.json
 ./playlist.json
 ./playlist.*
+
+./test.js
+./counter.js
