@@ -29,6 +29,12 @@ for (let i = 0; i < accountsList.spotify.length; i++){
 }
 //console.log(accountsArray[0].playlist[0].link)
 
+let counterPlays = 0;
+
+// replace w. regex
+const stringPause = 'aria-label="Pause"';
+const stringPlay = 'aria-label="Play"';
+
 /*
 const syncWait = ms => {
   const end = Date.now() + ms
@@ -67,6 +73,7 @@ async function main() {
       const sessionPasswort = accountsArray[i].passwort;
       const sessionSong = accountsArray[i].playlist[i].link;
 
+      const startValue = 0;
 
       try{
         if (accountsArray[i].state = "stop"){
@@ -76,7 +83,7 @@ async function main() {
             accountsArray[i].state = "logged"
           }
         }
-        dispatcher(accountsArray[i].driver, accountsArray[i].playlist,0,start);
+        dispatcher(accountsArray[i].driver, accountsArray[i].playlist,startValue);
         //playSong(accountsArray[i].driver,sessionSong);
       }
       catch(e){
@@ -240,34 +247,58 @@ async function loginSpotify(driver, email, password){
 
 
 async function playSong(driver, song){
-  console.log("play fkt");
 
   await sleep(1000);
   await driver.get(song);
+  await sleep(2000)
 
-  await sleep(3000);
+
+  // rewind
+  await driver.findElements(By.className("FKTganvAaWqgK6MUhbkx")).then(function(elements){
+    elements.forEach(function (element) {
+        element.click();
+        
+        /*element.getText().then(function(text){
+            console.log(text);
+        });*/
+    });
+  });
+
+  // play
+  await sleep(2000);
   await driver.findElements(By.className("A8NeSZBojOQuVvK4l1pS")).then(function(elements){
       elements.forEach(function (element) {
-          element.click();
-          element.getText().then(function(text){
-              console.log(text);
-          });
+        
+        element.click();
+
+        await sleep(1000);
+
+        element.getAttribute('outerHTML').then(function(text){
+          //console.log("hier:" + text);
+          // prüfen ob Play oder Pause -> wenn Play muss Funktion nochmal aufgerufen werden
+          
+        });
       });
   });
 
   await sleep(20000);
 
-  console.log("done")
+  counterPlays += 1;
+  console.log("Plays: " + counterPlays);
 
   //return playSong(driver, song);
 }
 
-async function dispatcher(driver, playlist, num, state){
+async function dispatcher(driver, playlist, num){
 
-  console.log("num ist:" + num);
   await playSong(driver, playlist[num].link);
 
-  // wenn num > playlist dann = 0
+  if (num >= accountsArray.length){
+    num = 0;
+  }
+  else {
+    num += 1;
+  }
 
-  return dispatcher(driver, playlist, num+1)
+  return dispatcher(driver, playlist, num)
 }
