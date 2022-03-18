@@ -3,11 +3,7 @@ const { fs } = require('file-system')
 
 let driver;
 
-// **** test stuff ****
-let accounts = [1,3,5];
-let playlists = ["song1", "song2", "song3"];
-// ****
-
+// read & parse local json documents
 const accountsList = JSON.parse(fs.readFileSync("./accounts.json", {encoding:'utf8', flag:'r'}));
 const playlistsList = JSON.parse(fs.readFileSync("./playlist.json", {encoding:'utf8', flag:'r'}));
 
@@ -35,175 +31,158 @@ let counterPlays = 0;
 const stringPause = 'aria-label="Pause"';
 const stringPlay = 'aria-label="Play"';
 
-/*
-const syncWait = ms => {
-  const end = Date.now() + ms
-  while (Date.now() < end) continue
-}
-
-async function asyncWait(waitTime){
-  const end = Date.now() + ms
-  while (Date.now() < end) continue
-}
-
-async function test(waitTime){
-  syncWait(waitTime);
-  return true;
-}
-
-async function playSong(waitTime, song){
-  console.log("start Song... " + song);
-  syncWait(waitTime);
-  console.log("end song");
-  return true;
-}*/
-
+const playTimeSpotify = 45000;
 
 
 async function main() {
 
-  //for (let k = 0; k < 3; k++){
-    for (let i = 0; i < accountsArray.length; i++){
-    
-      // wait until account is playing song
-      console.log("login account "+ accounts[i]);
-      accountsArray[i].driver = await new Builder().forBrowser("chrome").build();
+  for (let i = 0; i < accountsArray.length; i++){
+  
+    // wait until account is playing song
+    console.log("Logging in account: " + accountsArray[i].email + "...");
+    accountsArray[i].driver = await new Builder().forBrowser("chrome").build();
 
-      const sessionUser = accountsArray[i].email;
-      const sessionPasswort = accountsArray[i].passwort;
-      const sessionSong = accountsArray[i].playlist[i].link;
+    //const sessionUser = accountsArray[i].email;
+    //const sessionPasswort = accountsArray[i].passwort;
+    //const sessionSong = accountsArray[i].playlist[i].link;
 
-      const startValue = 0;
+    const startSong = 0;
 
-      try{
-        if (accountsArray[i].state = "stop"){
-          let loginState = await loginSpotify(accountsArray[i].driver,sessionUser,sessionPasswort);
+    try{
+      if (accountsArray[i].state = "stop"){
+        let loginState = await loginSpotify(accountsArray[i]);
 
-          if (loginState){
-            accountsArray[i].state = "logged"
-          }
-        }
-        dispatcher(accountsArray[i].driver, accountsArray[i].playlist,startValue);
-        //playSong(accountsArray[i].driver,sessionSong);
-      }
-      catch(e){
-
-      }
-
-
-          
-      /*
-      await accountsArray[i].driver.get('https://www.spotify.com');
-
-      await sleep(3000);
-      await accountsArray[i].driver.findElement(By.id('onetrust-accept-btn-handler')).click();
-      
-      //await click('Cookies akzeptieren');
-      await accountsArray[i].driver.findElement(By.xpath("//*[text()='" + "Cookies akzeptieren" + "']")).click();
-
-      //await click('Anmelden');
-      await accountsArray[i].driver.findElement(By.xpath("//*[text()='" + "Anmelden" + "']")).click();
-
-      await sleep(1000);
-      await accountsArray[i].driver.findElement(By.id('login-username')).sendKeys(sessionUser, Key.RETURN);
-      await accountsArray[i].driver.findElement(By.id('login-password')).sendKeys(sessionPasswort, Key.RETURN);
-
-      await sleep(1000);
-      await accountsArray[i].driver.get(sessionSong);
-
-      await sleep(5000);
-      await accountsArray[i].driver.findElements(By.className("A8NeSZBojOQuVvK4l1pS")).then(function(elements){
-          elements.forEach(function (element) {
-              element.click();
-              element.getText().then(function(text){
-                  console.log(text);
-              });
-          });
-      });
-
-      await sleep(2000);
-
-      //await test(5000);
-
-      //console.log(accountsArray);
-      
-      /*
-      try{    
-        let isOkay = await test(5000);
-
-        if (isOkay == true){
-          console.log("--------------------------------")
-          console.log("start ACCOUNT " + accounts[i]);
-    
-          // play songs
-          for (let j = 0; j < playlists.length; j++){
-            try{
-              let songDone = await playSong(2000, playlists[j]);
-              if (!songDone){
-                break;
-              }
-            }
-            catch(e){
-              console.log(e);
-            }
-          }
-        }
-        else {
-          console.log("break");
-          break;
+        if (loginState){
+          accountsArray[i].state = "logged"
         }
       }
-      catch(e){
-        console.log(e);
-      }
-      */
+      dispatcher(accountsArray[i],startSong);
     }
-  //}
+    catch(e){
+      console.log("Exception: " + e);
+    }
+  }
 }
 
 main();
 
 
-/*
-async function loginSpotify(email, password){
-  const sessionUser = email;
-  const sessionPasswort = passwort;
 
-  await accountsArray[0].driver.get('https://www.spotify.com');
 
-  await sleep(3000);
-  await driver.findElement(By.id('onetrust-accept-btn-handler')).click();
 
-  await click('Cookies akzeptieren');
-  await click('Anmelden');
 
-  await sleep(1000);
-  await driver.findElement(By.id('login-username')).sendKeys(sessionUser, Key.RETURN);
-  await driver.findElement(By.id('login-password')).sendKeys(sessionPasswort, Key.RETURN);
+async function loginSpotify(account){
 
-  await sleep(1000);
+  try
+  {
+    // go to website & wait until rendered
+    await account.driver.get('https://www.spotify.com');
+    await sleep(3000);
+    
+    // 
+    await account.driver.findElement(By.id('onetrust-accept-btn-handler')).click();
+    
+    //await click('Cookies akzeptieren');
+    await account.driver.findElement(By.xpath("//*[text()='" + "Cookies akzeptieren" + "']")).click();
+    
+    //await click('Anmelden');
+    await account.driver.findElement(By.xpath("//*[text()='" + "Anmelden" + "']")).click();
+    await sleep(1000);
+    
+    // login account & wait
+    await account.driver.findElement(By.id('login-username')).sendKeys(account.email, Key.RETURN);
+    await account.driver.findElement(By.id('login-password')).sendKeys(account.passwort, Key.RETURN);
+    await sleep(1000)
+    
+    console.log("Login successful: " + account.email)
+    return true;
+  }
 
-  return true;
+  catch(e)
+  {
+    console.log("Login error: " + account.email);
+    console.log("Exception " + e);
+    return false;
+  }
 }
 
 
-async function playSongSpotify(song){
 
-  const sessionSong = song;
+async function dispatcher(account, num){
+  
+  await playSong(account, account.playlist[num].link);
+  
+  if (num >= accountsArray.length){
+    num = 0;
+    console.log("Playlist done.");
+  }
+  else {
+    num += 1;
+  }
+  return dispatcher(account, num)
+}
 
-  await driver.get(sessionSong);
 
-  await sleep(3000);
-  await driver.findElements(By.className("A8NeSZBojOQuVvK4l1pS")).then(function(elements){
-      elements.forEach(function (element) {
-          element.click();
-          element.getText().then(function(text){
-              console.log(text);
-          });
-      });
+async function playSong(account, song){
+  await sleep(1000);
+  
+  // open songlink Url & wait
+  await account.driver.get(song);
+  await sleep(2000)
+  
+  // rewind song => find button & click
+  await account.driver.findElements(By.className("FKTganvAaWqgK6MUhbkx")).then(function(elements){
+    elements.forEach(function (element) {
+      element.click(); 
+    });
   });
+  
+  // play song => find button & click & check if song is playing (otherwise repeat play routine)
+  await play(account);
+  
+  // wait for minimal time to 
+  await sleep(playTimeSpotify);
+  
+  counterPlays += 1;
+  console.log("Total session plays: " + counterPlays);
+  
+  //return playSong(driver, song);
 }
-*/
+
+async function play(account){
+
+  console.log("Play fkt " + account.email)
+  await sleep(1000);
+  await account.driver.findElements(By.className("A8NeSZBojOQuVvK4l1pS")).then(function(elements)
+  {
+    elements.forEach(function (element) 
+    {
+      element.click();
+
+      // hier warten!!!
+  
+      element.getAttribute('outerHTML').then(function(text)
+      {
+        //console.log(text);
+        
+        let buttonOuterHtml = text;
+        
+        if (buttonOuterHtml.includes(stringPause)){
+          console.log("running!" + account.email)
+        }
+        else if (buttonOuterHtml.includes(stringPlay)){
+          console.log("not playing - repeat function! " + account.email);
+          return play(account);
+        }
+        else {
+          console.log("No button state found - please check if process is running!")
+        }
+      })
+    })
+  })
+}
+
+
 
 
 function sleep(ms) {
@@ -212,93 +191,9 @@ function sleep(ms) {
   });
 } 
 
-
+// currently not used:
 async function click(text){
   
   await driver.findElement(By.xpath("//*[text()='" + text + "']")).click();
   console.log(text)
-}
-
-
-
-async function loginSpotify(driver, email, password){
-  console.log("login fkt");
-
-  await driver.get('https://www.spotify.com');
-
-  await sleep(3000);
-  await driver.findElement(By.id('onetrust-accept-btn-handler')).click();
-  
-  //await click('Cookies akzeptieren');
-  await driver.findElement(By.xpath("//*[text()='" + "Cookies akzeptieren" + "']")).click();
-
-  //await click('Anmelden');
-  await driver.findElement(By.xpath("//*[text()='" + "Anmelden" + "']")).click();
-
-  await sleep(1000);
-  await driver.findElement(By.id('login-username')).sendKeys(email, Key.RETURN);
-  await driver.findElement(By.id('login-password')).sendKeys(password, Key.RETURN);
-
-  await sleep(1000)
-
-  return true;
-}
-
-
-
-async function playSong(driver, song){
-
-  await sleep(1000);
-  await driver.get(song);
-  await sleep(2000)
-
-
-  // rewind
-  await driver.findElements(By.className("FKTganvAaWqgK6MUhbkx")).then(function(elements){
-    elements.forEach(function (element) {
-        element.click();
-        
-        /*element.getText().then(function(text){
-            console.log(text);
-        });*/
-    });
-  });
-
-  // play
-  await sleep(2000);
-  await driver.findElements(By.className("A8NeSZBojOQuVvK4l1pS")).then(function(elements){
-      elements.forEach(function (element) {
-        
-        element.click();
-
-        await sleep(1000);
-
-        element.getAttribute('outerHTML').then(function(text){
-          //console.log("hier:" + text);
-          // prüfen ob Play oder Pause -> wenn Play muss Funktion nochmal aufgerufen werden
-          
-        });
-      });
-  });
-
-  await sleep(20000);
-
-  counterPlays += 1;
-  console.log("Plays: " + counterPlays);
-
-  //return playSong(driver, song);
-}
-
-async function dispatcher(driver, playlist, num){
-
-  await playSong(driver, playlist[num].link);
-
-  if (num >= accountsArray.length){
-    num = 0;
-  }
-  else {
-    num += 1;
-  }
-
-  return dispatcher(driver, playlist, num)
 }
