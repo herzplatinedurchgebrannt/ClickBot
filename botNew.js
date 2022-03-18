@@ -1,5 +1,6 @@
 const { Builder, By, Key, until } = require('selenium-webdriver');
-const { fs } = require('file-system')
+const { fs } = require('file-system');
+const { Result } = require('selenium-webdriver/io/exec');
 
 let driver;
 
@@ -41,10 +42,6 @@ async function main() {
     // wait until account is playing song
     console.log("Logging in account: " + accountsArray[i].email + "...");
     accountsArray[i].driver = await new Builder().forBrowser("chrome").build();
-
-    //const sessionUser = accountsArray[i].email;
-    //const sessionPasswort = accountsArray[i].passwort;
-    //const sessionSong = accountsArray[i].playlist[i].link;
 
     const startSong = 0;
 
@@ -138,7 +135,16 @@ async function playSong(account, song){
   });
   
   // play song => find button & click & check if song is playing (otherwise repeat play routine)
-  await play(account);
+
+  let isPlaying = false;
+
+  while (isPlaying == false){
+    await pressPlayButton(account);
+    await(2000)
+    isPlaying = await checkPlayButton(account);
+    console.log("is playing: -----" + isPlaying)
+  }
+  console.log("check ok!")
   
   // wait for minimal time to 
   await sleep(playTimeSpotify);
@@ -149,7 +155,7 @@ async function playSong(account, song){
   //return playSong(driver, song);
 }
 
-async function play(account){
+async function pressPlayButton(account){
 
   console.log("Play fkt " + account.email)
   await sleep(1000);
@@ -158,8 +164,21 @@ async function play(account){
     elements.forEach(function (element) 
     {
       element.click();
+    })
+  })
+}
 
-      // hier warten!!!
+async function checkPlayButton(account){
+
+  let result;
+
+  console.log("Check fkt " + account.email)
+  await sleep(1000);
+  await account.driver.findElements(By.className("A8NeSZBojOQuVvK4l1pS")).then(function(elements)
+  {
+    elements.forEach(function (element) 
+    {
+      //element.click();
   
       element.getAttribute('outerHTML').then(function(text)
       {
@@ -168,18 +187,21 @@ async function play(account){
         let buttonOuterHtml = text;
         
         if (buttonOuterHtml.includes(stringPause)){
-          console.log("running!" + account.email)
+          //console.log("running! " + account.email)
+          result = true;
         }
         else if (buttonOuterHtml.includes(stringPlay)){
-          console.log("not playing - repeat function! " + account.email);
-          return play(account);
+          //console.log("not playing - repeat function! " + account.email);
+          result = false;
         }
         else {
-          console.log("No button state found - please check if process is running!")
+          //console.log("No button state found - please check if process is running!")
+          result = false;
         }
       })
     })
   })
+  return result;
 }
 
 
