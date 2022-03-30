@@ -20,8 +20,11 @@
   },
   "homepage": "https://github.com/herzplatinedurchgebrannt/ClickBot#readme",
   "dependencies": {
+    "axios": "^0.26.1",
     "file-system": "^2.2.2",
     "fs": "^0.0.1-security",
+    "https": "^1.0.0",
+    "node-fetch": "2.0",
     "selenium-webdriver": "^4.1.1"
   }
 }

@@ -1,6 +1,10 @@
 const { Builder, By, Key, until } = require('selenium-webdriver');
 const { fs } = require('file-system');
 const { Result } = require('selenium-webdriver/io/exec');
+const https = require('https');
+const axios = require('axios');
+
+const fetch = require('node-fetch');
 
 let driver;
 
@@ -21,7 +25,7 @@ class Account {
 
 let accountsArray = new Array();
 
-for (let i = 0; i < accountsList.spotify.length; i++){
+for (let i = 0; i < accountsList.spotify.length - 2; i++){
   accountsArray[i] = new Account(accountsList.spotify[i].email, accountsList.spotify[i].passwort, playlistsList.spotify);
 }
 //console.log(accountsArray[0].playlist[0].link)
@@ -35,9 +39,12 @@ const stringPlay = 'aria-label="Play"';
 const playTimeSpotify = 45000;
 
 
+let checkOk = false;
+
+
 async function main() {
 
-  for (let i = 0; i < accountsArray.length; i++){
+  for (let i = 0; i < 1/*accountsArray.length*/; i++){
   
     // wait until account is playing song
     console.log("Logging in account: " + accountsArray[i].email + "...");
@@ -70,6 +77,8 @@ main();
 
 async function loginSpotify(account){
 
+  let result = false;
+
   try
   {
     // go to website & wait until rendered
@@ -92,15 +101,17 @@ async function loginSpotify(account){
     await sleep(1000)
     
     console.log("Login successful: " + account.email)
-    return true;
+    result = true;
   }
 
   catch(e)
   {
     console.log("Login error: " + account.email);
     console.log("Exception " + e);
-    return false;
+    result = false;
   }
+
+  return result;
 }
 
 
@@ -127,36 +138,71 @@ async function playSong(account, song){
   await account.driver.get(song);
   await sleep(2000)
   
+
   // rewind song => find button & click
-  await account.driver.findElements(By.className("FKTganvAaWqgK6MUhbkx")).then(function(elements){
-    elements.forEach(function (element) {
-      element.click(); 
-    });
+  await account.driver.findElement(By.className("FKTganvAaWqgK6MUhbkx")).then(function(element){
+    console.log('Element exists1');
+    element.click();
+
   });
   
   // play song => find button & click & check if song is playing (otherwise repeat play routine)
-
   let isPlaying = false;
 
-  while (isPlaying == false){
+  await pressPlayButton(account);
+  await(2000)
+  //await checkPlayButtonNew(account);
+
+
+  async function fetchMovies(link) {
+    const response = await fetch(link);
+    // waits until the request completes...
+    console.log(response);
+  }
+
+  //fetchMovies(song)
+
+  //await getMovieTitles("/https://open.spotify.com/artist/2ZHNNNUkWlcboai09BqLRa");
+
+  // ********************************************************************************************* //
+
+
+  let pButton;
+
+  pButton = await account.driver.findElement(By.className("A8NeSZBojOQuVvK4l1pS"));
+
+  let klasse = await pButton.getAttribute('aria-label');
+
+  console.log(klasse);
+  
+  /*
+  while (!checkOk == true){
     await pressPlayButton(account);
     await(2000)
-    isPlaying = await checkPlayButton(account);
-    console.log("is playing: -----" + isPlaying)
-  }
-  console.log("check ok!")
+    console.log("while *******");
+    console.log(await checkPlayButton(account));
+
+    console.log(isPlaying);
+
+    /*if (isPlaying){
+      continue;
+    }*/
+  //}
+  //console.log(`Song is playing [${account.email} - ${song}]`)
+  //console.log("********")
   
   // wait for minimal time to 
-  await sleep(playTimeSpotify);
+  //await sleep(playTimeSpotify);
   
   counterPlays += 1;
-  console.log("Total session plays: " + counterPlays);
+  console.log(`Total session plays ${counterPlays}`);
   
   //return playSong(driver, song);
 }
 
-async function pressPlayButton(account){
 
+async function pressPlayButton(account){
+  
   console.log("Play fkt " + account.email)
   await sleep(1000);
   await account.driver.findElements(By.className("A8NeSZBojOQuVvK4l1pS")).then(function(elements)
@@ -166,14 +212,22 @@ async function pressPlayButton(account){
       element.click();
     })
   })
+  await sleep(1000);
 }
 
 async function checkPlayButton(account){
 
-  let result;
+  let result = false; 
+
+  let testOutside = "";
 
   console.log("Check fkt " + account.email)
-  await sleep(1000);
+  await sleep(3000);
+
+  let xxx = await account.driver.findElement(By.className("A8NeSZBojOQuVvK4l1pS"))
+
+  console.log(JSON.stringify(xxx));
+  
   await account.driver.findElements(By.className("A8NeSZBojOQuVvK4l1pS")).then(function(elements)
   {
     elements.forEach(function (element) 
@@ -182,29 +236,76 @@ async function checkPlayButton(account){
   
       element.getAttribute('outerHTML').then(function(text)
       {
-        //console.log(text);
+        //console.log("inner " + text);
         
         let buttonOuterHtml = text;
+        testOutside = text;
+
+        //console.log(text);
         
         if (buttonOuterHtml.includes(stringPause)){
-          //console.log("running! " + account.email)
+          console.log("running! " + account.email)
           result = true;
+          
         }
         else if (buttonOuterHtml.includes(stringPlay)){
-          //console.log("not playing - repeat function! " + account.email);
+          console.log("not playing - repeat function! " + account.email);
           result = false;
         }
         else {
-          //console.log("No button state found - please check if process is running!")
+          console.log("No button state found - please check if process is running!")
           result = false;
         }
       })
     })
+
+
   })
-  return result;
+
+  console.log("xxx " + xxx)
+  /*
+  console.log("testoutside : " + testOutside)
+  if (testOutside.includes(stringPause)){
+    console.log("running! " + account.email)
+    //checkOk = true;
+    result = true;
+    
+    
+  }
+  else if (testOutside.includes(stringPlay)){
+    console.log("not playing - repeat function! " + account.email);
+    await pressPlayButton(account)
+    result = pressPlayButton(account);
+  }
+  else {
+    console.log("No button state found - please check if process is running!")
+    await pressPlayButton(account);
+    result = pressPlayButton(account);
+  }*/
+
+  //console.log(result);
+  return await result;
 }
 
 
+async function checkPlayButtonNew(account)
+{
+
+  let result = false; 
+
+  let testOutside = "";
+
+  console.log("Check fkt " + account.email)
+  await sleep(3000);
+
+  // doesnt work -> always true
+  await account.driver.findElements(By.className("Axxx8NeSZBojOQuVvK4l1pS")).then(function(elements){
+    console.log('Element exists');
+  }, function(err) {
+        console.log("fuck");
+        webdriver.promise.rejected(err);
+  });
+}
 
 
 function sleep(ms) {
@@ -218,4 +319,10 @@ async function click(text){
   
   await driver.findElement(By.xpath("//*[text()='" + text + "']")).click();
   console.log(text)
+}
+
+
+async function getMovieTitles(substr){
+  let response = await axios.get(substr)
+  console.log(response.data);
 }
