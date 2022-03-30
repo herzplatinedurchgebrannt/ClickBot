@@ -7,6 +7,9 @@ const fetch = require('node-fetch');
 
 let driver;
 
+// minimum 30 s. = 1 play
+const playTimeSpotify = 35000;
+
 // read & parse local json documents
 const accountsList = JSON.parse(fs.readFileSync("./accounts.json", {encoding:'utf8', flag:'r'}));
 const playlistsList = JSON.parse(fs.readFileSync("./playlist.json", {encoding:'utf8', flag:'r'}));
@@ -28,15 +31,16 @@ for (let i = 0; i < accountsList.spotify.length; i++){
   accountsArray[i] = new Account(accountsList.spotify[i].email, accountsList.spotify[i].passwort, playlistsList.spotify);
 }
 
-let counterPlays = 0;
-const playTimeSpotify = 20000;
+let startDate = new Date();
+
+let logger = {songsPlayed: 0, playlistsPlayed: 0, start: startDate};
+
 
 
 async function main() {
 
   for (let i = 0; i < accountsArray.length; i++){
   
-    // wait until account is playing song
     console.log("Logging in account: " + accountsArray[i].email + "...");
     accountsArray[i].driver = await new Builder().forBrowser("chrome").build();
 
@@ -58,7 +62,7 @@ async function main() {
   }
 }
 
-main();
+
 
 
 
@@ -106,8 +110,6 @@ async function loginSpotify(account){
 
 async function dispatcher(account, num_currentSong){
 
-  console.log(`num current song: ${num_currentSong}`);
-
   await sleep(1000);
   
   try{
@@ -138,11 +140,12 @@ async function dispatcher(account, num_currentSong){
       // find html object and check state of playbutton
       let pButton = await account.driver.findElement(By.className("A8NeSZBojOQuVvK4l1pS"));
       let currentState = await pButton.getAttribute('aria-label');
-      console.log(currentState);
+      //console.log(currentState);
     
       // "Play" means song is not playing
       if(currentState == "Play"){
         songRunning = false;
+        console.log(currentState);
       }
       else if (currentState == "Pause"){
         songRunning = true;
@@ -153,15 +156,20 @@ async function dispatcher(account, num_currentSong){
     }
 
     await sleep(playTimeSpotify);
-    console.log("song done");
+    logger.songsPlayed += 1;
 
     if (num_currentSong >= account.playlist.length - 1){
       num_currentSong = 0;
-      console.log("Playlist done.");
+      logger.playlistsPlayed += 1;
     }
     else {
       num_currentSong += 1;
     }
+
+    var currentDate = new Date();
+
+    console.log(`[Played: ${logger.songsPlayed} songs & ${logger.playlistsPlayed} playlists] ${currentDate.getMinutes() - startDate.getMinutes()} minutes`);
+
     return dispatcher(account, num_currentSong)
   }
   catch(e){
@@ -179,5 +187,6 @@ function sleep(ms) {
 } 
 
 
+main();
 
 
