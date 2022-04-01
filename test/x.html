@@ -1,0 +1,136 @@
+<script>
+
+
+    const ws = new WebSocket('ws://192.168.178.48:9898/');
+    
+    ws.addEventListener("open", e => {
+        ws.send(JSON.stringify({
+            type: "message",
+            value: "Connection OK!"
+        }));
+    });
+    
+    ws.addEventListener("message", e => {
+        document.getElementById("CurrentPos").textContent = e.data;
+    });
+    
+    
+    function goToPos() {
+        let axisValue = document.getElementById("servo1").value;
+    
+        if (axisValue > 500 && axisValue < 2500){
+            ws.send(JSON.stringify({
+                type: "pos",
+                value: document.getElementById("servo1").value
+            }));
+            document.getElementById("CurrentPos").textContent = document.getElementById("servo1").value;
+        }
+        else {
+            console.log("Value not accepted!")
+        }
+        
+        //document.getElementById("servo1").value = "";
+    }
+    
+    function showDisplay() {
+        ws.send(JSON.stringify({
+            type: "display",
+            value: document.getElementById("display").value
+        }));
+        document.getElementById("display").value = "";
+    }
+    /*
+ws.onopen = function() {
+    ws.send(document.getElementById("test").textContent);
+    console.log('WebSocket Client Connected');
+    ws.send('Hi this is web client.');
+};
+
+
+
+ws.onmessage = function(e) {
+  console.log("Received: '" + e.data + "'");
+};
+
+function showDisplay() {
+    ws.send(document.getElementById("in").value);
+    document.getElementById("in").value = "";
+}
+
+function sendPos() {
+    ws.send(JSON.stringify({type: "Pos", value: document.getElementById("pos").value}));
+    document.getElementById("pos").value = "";
+}
+
+
+function switchOn() {
+    console.log("On");
+    ws.send("ON");
+}
+
+function switchOff() {
+    console.log("Off");
+    ws.send("OFF");
+}
+
+function plus() {
+    console.log("Plus");
+    ws.send("Plus");
+}
+
+function minus() {
+    console.log("Minus");
+    ws.send("Minus");
+}*/
+
+</script>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!--p id="test">hallo</p>
+    <input type="text" id="in">
+    <button onclick="showDisplay()">Send</button>
+    <button onclick="switchOn()">On</button>
+    <button onclick="switchOff()">Off</button>
+
+    <p></p>
+    <input type="text" id="pos">
+    <button onclick="sendPos()">Send Pos</button-->
+
+</body>
